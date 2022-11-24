@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[])
 {
-    printf("Test Env - TestEnv:%s\n", getenv("TestEnv"));
+    printf("Test Env - TestEnv:%s\n", getenv("PATH"));
     
     return 0;
 }

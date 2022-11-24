@@ -44,49 +44,44 @@
 using std::cout;
 using std::endl;
 
-class CAppConfig
-{
+class CAppConfig {
 public:
-    CAppConfig(std::vector<int> &vi_val, std::vector<std::string> &vs_val)
-    {
+    CAppConfig(std::vector<int> &vi_val, std::vector<std::string> &vs_val) {
         m_vi_val = std::move(vi_val);
         m_vs_val = std::move(vs_val);
-        if(pthread_mutex_init(&m_lock, NULL) != 0)
-        {
-            cout<<"mutex init failed"<<endl;
+        if (pthread_mutex_init(&m_lock, NULL) != 0) {
+            cout << "mutex init failed" << endl;
         }
-    }   
-    ~CAppConfig(){
+    }
+
+    ~CAppConfig() {
         pthread_mutex_destroy(&m_lock);
     }
 
-    void ShowAppVal()
-    {
+    void ShowAppVal() {
         //互斥量加锁
         pthread_mutex_lock(&m_lock);
-        cout<<"vector int:";
-        for(auto &x:m_vi_val)
-        {
-            cout<<x<<" ";
+        cout << "vector int:";
+        for (auto &x: m_vi_val) {
+            cout << x << " ";
         }
-        cout<<endl;
+        cout << endl;
 
-        cout<<"vector string:";
-        for(auto iter=m_vs_val.begin(); iter!=m_vs_val.end(); iter++)
-        {
-            cout<<*iter<<" ";
+        cout << "vector string:";
+        for (auto iter = m_vs_val.begin(); iter != m_vs_val.end(); iter++) {
+            cout << *iter << " ";
         }
-        cout<<endl;
+        cout << endl;
         pthread_mutex_unlock(&m_lock);
     }
- 
-    void ModifyVal(std::vector<int> &vi_val, std::vector<std::string> &vs_val)
-    {
+
+    void ModifyVal(std::vector<int> &vi_val, std::vector<std::string> &vs_val) {
         pthread_mutex_lock(&m_lock);
         m_vi_val = std::move(vi_val);
         m_vs_val = std::move(vs_val);
         pthread_mutex_unlock(&m_lock);
     }
+
 private:
     std::vector<int> m_vi_val;
     std::vector<std::string> m_vs_val;
@@ -96,8 +91,7 @@ private:
 
 void *thread_loop_func0(void *arg);
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     pthread_t tid;
     pthread_attr_t attr;
     int ret;
@@ -109,37 +103,30 @@ int main(int argc, char* argv[])
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&tid, &attr, thread_loop_func0, &pSAppConfig);
-    if(ret == 0)
-    {
+    if (ret == 0) {
         sleep(1);
         //等待线程返回
         int ret = pthread_join(tid, NULL);
-        if(ret == 0)
-        {
-            cout<<"thread join success"<<endl;
+        if (ret == 0) {
+            cout << "thread join success" << endl;
+        } else {
+            cout << "thread join failed:" << ret << endl;
         }
-        else
-        {
-            cout<<"thread join failed:"<<ret<<endl;
-        }
-        
-    }
-    else
-    {
-        cout<<"thread create failed, id:"<<ret<<endl;
+
+    } else {
+        cout << "thread create failed, id:" << ret << endl;
         return ret;
     }
-    
+
     return 0;
 }
 
-void *thread_loop_func0(void *arg)
-{
-    class CAppConfig* pSAppCofig = (class CAppConfig *)arg;
+void *thread_loop_func0(void *arg) {
+    class CAppConfig *pSAppCofig = (class CAppConfig *) arg;
 
     pSAppCofig->ShowAppVal();
-    cout<<"thread pid:"<<pthread_self()<<endl;
+    cout << "thread pid:" << pthread_self() << endl;
 
     pthread_detach(pthread_self()); //分离线程, 此时线程与创建的进程无关，后续执行join返回值22
-    pthread_exit((void *)0);
+    pthread_exit((void *) 0);
 }

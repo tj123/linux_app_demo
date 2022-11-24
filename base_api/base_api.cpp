@@ -19,26 +19,30 @@
 #define TEST_DIR  "test_dir"
 #define TEST_DIR1 "test_dir/test_dir2"
 
-int process_dir(void)
-{
+int process_dir(void) {
     DIR *pDir;
     struct dirent *pdirent;
 
     pDir = opendir(TEST_DIR);
-    if(pDir == NULL){
-        printf("open %s filed, error:%s\n", TEST_DIR, strerror(errno));
+//    if (pDir == NULL) {
+    if (!pDir) {
+        printf("打开 %s 失败, 原因:%s\n", TEST_DIR, strerror(errno));
         return -1;
-    } 
+    }
 
-    while((pdirent = readdir(pDir)) != NULL){
+    while ((pdirent = readdir(pDir)) != NULL) {
         printf("%s\n", pdirent->d_name);
     }
     closedir(pDir);
 
     pDir = opendir(TEST_DIR1);
-    if(pDir == NULL){
+    if (pDir == NULL) {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+        mkdir(TEST_DIR1);
+#else
         mkdir(TEST_DIR1, 0755);
-    }else{
+#endif
+    } else {
         printf("open %s succes\n", TEST_DIR1);
         closedir(pDir);
     }
@@ -46,28 +50,27 @@ int process_dir(void)
 }
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     time_t current_time[2];
     int c;
-    
+
     time(&current_time[0]);
 
     //opt
     //:表示后面必须带参数, ::表示不一定带参数
-    while((c = getopt(argc, argv, "v::h:"))!= -1){
-        switch(c){
+    while ((c = getopt(argc, argv, "v::h:")) != -1) {
+        switch (c) {
             case 'v':
                 printf("version 0.0.1\n");
-            break;
+                break;
             case 'h':
-                if(optarg != NULL){
+                if (optarg != NULL) {
                     printf("input:%s\n", optarg);
                 }
-            break;
+                break;
             default:
                 printf("no valid flag input\n");
-            break;
+                break;
         }
     }
 
@@ -75,15 +78,16 @@ int main(int argc, char *argv[])
     process_dir();
 
     //getpid, getuid
-    printf("pid:%d, uid:%d\n", getpid(), getuid());
-    
+//    printf("pid:%d, uid:%d\n", getpid(), getuid());
+    printf("pid:%d\n", getpid());
+
     //perror
-    fprintf(stderr, "EACCESS:%s\n", strerror(EACCES));
+    fprintf(stderr, "EACCESS ----------> :%s\n", strerror(EACCES));
     errno = ENOENT;
-    perror("test error:");
+    perror("测试错误");
 
     time(&current_time[1]);
-    printf("timer is:%ds\n", (int)(current_time[1]-current_time[0]));
+    printf("timer is:%ds\n", (int) (current_time[1] - current_time[0]));
 
     return 0;
 }
